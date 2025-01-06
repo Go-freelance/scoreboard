@@ -26,7 +26,7 @@ export default function Dashboard() {
   const shotClockIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const websocket = new WebSocket("ws://localhost:8080");
+    const websocket = new WebSocket("wss://lotto-r7aq.onrender.com/");
     setWs(websocket);
 
     return () => {
