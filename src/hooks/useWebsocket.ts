@@ -3,9 +3,19 @@ import { WEBSOCKET_URL } from "../constants/game";
 
 export function useWebSocket() {
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const websocket = new WebSocket(WEBSOCKET_URL);
+
+    websocket.onopen = () => {
+      setIsConnected(true);
+    };
+
+    websocket.onclose = () => {
+      setIsConnected(false);
+    };
+
     setWs(websocket);
 
     return () => {
@@ -22,5 +32,5 @@ export function useWebSocket() {
     [ws]
   );
 
-  return { sendUpdate };
+  return { sendUpdate, isConnected };
 }

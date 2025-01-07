@@ -7,10 +7,11 @@ import { useGameState } from "../../hooks/useGameState";
 import { useWebSocket } from "../../hooks/useWebsocket";
 import { TeamCard } from "../components/TeamCard";
 import { GameControls } from "../components/GameControls";
+import { ConnectionStatus } from "../components/ConnexionStatus";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { sendUpdate } = useWebSocket();
+  const { sendUpdate, isConnected } = useWebSocket();
   const {
     state,
     updateTeamName,
@@ -34,6 +35,7 @@ export default function Dashboard() {
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Basketball Scoreboard Manager</h1>
+        <ConnectionStatus isConnected={isConnected} />
         <Button onClick={handleLogout} variant="outline">
           Logout
         </Button>
