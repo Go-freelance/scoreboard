@@ -5,23 +5,22 @@ export function useWebSocket() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
+  const initializeWebSocket = useCallback(() => {
     const websocket = new WebSocket(WEBSOCKET_URL);
 
-    websocket.onopen = () => {
-      setIsConnected(true);
-    };
-
+    websocket.onopen = () => setIsConnected(true);
+    
     websocket.onclose = () => {
       setIsConnected(false);
+      setTimeout(() => initializeWebSocket(), 1000);
     };
 
     setWs(websocket);
-
-    return () => {
-      websocket.close();
-    };
   }, []);
+
+  useEffect(() => {
+    initializeWebSocket();
+  }, [initializeWebSocket]);
 
   const sendUpdate = useCallback(
     (data: { [key: string]: string | number }) => {
