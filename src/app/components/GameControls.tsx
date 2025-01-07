@@ -27,20 +27,20 @@ export function GameControls({
 }: GameControlsProps) {
   const { startTimer: startGameTimer, stopTimer: stopGameTimer } = useGameTimer(
     gameTimer,
-    (time) => {
-      setGameTimer(time);
-      sendUpdate({ gameTimer: time });
-    },
-    () => sendUpdate({ gameTimer: "00:00" })
+    (time) => setGameTimer(time),
+    () => {
+      setGameTimer("00:00");
+      sendUpdate({ gameTimer: "00:00" });
+    }
   );
 
   const { startTimer: startShotClock, stopTimer: stopShotClock } = useGameTimer(
     shotClock,
-    (time) => {
-      setShotClock(time);
-      sendUpdate({ shotClock: time });
-    },
-    () => sendUpdate({ shotClock: "00" })
+    (time) => setShotClock(time),
+    () => {
+      setShotClock("00");
+      sendUpdate({ shotClock: "00" });
+    }
   );
 
   return (
@@ -66,7 +66,6 @@ export function GameControls({
                 onClick={() => {
                   stopGameTimer();
                   setGameTimer("10:00");
-                  sendUpdate({ gameTimer: "10:00" });
                 }}
               >
                 Reset
@@ -92,7 +91,6 @@ export function GameControls({
                 onClick={() => {
                   stopShotClock();
                   setShotClock("24");
-                  sendUpdate({ shotClock: "24" });
                 }}
               >
                 Reset
@@ -112,7 +110,6 @@ export function GameControls({
                 value={period}
                 onValueChange={(value) => {
                   setPeriod(value);
-                  sendUpdate({ period: value });
                 }}
               >
                 <SelectTrigger>

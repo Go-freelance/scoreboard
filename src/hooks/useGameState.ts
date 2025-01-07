@@ -1,10 +1,6 @@
-import { useReducer, useCallback } from "react";
-import { GameState, GameAction, TeamId } from "../types/game";
-import {
-  INITIAL_GAME_TIMER,
-  INITIAL_SHOT_CLOCK,
-  INITIAL_PERIOD,
-} from "../constants/game";
+import { useReducer, useCallback } from 'react';
+import { GameState, GameAction, TeamId } from '../types/game';
+import { INITIAL_GAME_TIMER, INITIAL_SHOT_CLOCK, INITIAL_PERIOD } from '../constants/game';
 
 const initialState: GameState = {
   teamA: { name: "Team A", score: 0 },
@@ -26,11 +22,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     case "UPDATE_SCORE":
       const team = action.teamId === "A" ? "teamA" : "teamB";
+      const newScore = Math.max(0, state[team].score + action.points);
       return {
         ...state,
         [team]: {
           ...state[team],
-          score: Math.max(0, state[team].score + action.points),
+          score: newScore,
         },
       };
     case "SET_GAME_TIMER":
@@ -44,39 +41,34 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-export function useGameState(
-  sendUpdate: (data: { [key: string]: string | number }) => void
-) {
+export function useGameState(sendUpdate: (data: { [key: string]: string | number }) => void) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  const updateTeamName = useCallback(
-    (teamId: TeamId, name: string) => {
-      dispatch({ type: "UPDATE_TEAM_NAME", teamId, name });
-      sendUpdate({ [`team${teamId}Name`]: name });
-    },
-    [sendUpdate]
-  );
+  const updateTeamName = useCallback((teamId: TeamId, name: string) => {
+    dispatch({ type: "UPDATE_TEAM_NAME", teamId, name });
+    sendUpdate({ [`team${teamId}Name`]: name });
+  }, [sendUpdate]);
 
-  const updateScore = useCallback(
-    (teamId: TeamId, points: number) => {
-      dispatch({ type: "UPDATE_SCORE", teamId, points });
-      const newScore = state[teamId === "A" ? "teamA" : "teamB"].score + points;
-      sendUpdate({ [`team${teamId}Score`]: newScore });
-    },
-    [sendUpdate, state]
-  );
+  const updateScore = useCallback((teamId: TeamId, points: number) => {
+    dispatch({ type: "UPDATE_SCORE", teamId, points });
+    const newScore = Math.max(0, state[teamId === "A" ? "teamA" : "teamB"].score + points);
+    sendUpdate({ [`team${teamId}Score`]: newScore });
+  }, [sendUpdate, state]);
 
   const setGameTimer = useCallback((time: string) => {
     dispatch({ type: "SET_GAME_TIMER", time });
-  }, []);
+    sendUpdate({ gameTimer: time });
+  }, [sendUpdate]);
 
   const setShotClock = useCallback((time: string) => {
     dispatch({ type: "SET_SHOT_CLOCK", time });
-  }, []);
+    sendUpdate({ shotClock: time });
+  }, [sendUpdate]);
 
   const setPeriod = useCallback((period: string) => {
     dispatch({ type: "SET_PERIOD", period });
-  }, []);
+    sendUpdate({ period });
+  }, [sendUpdate]);
 
   return {
     state,
@@ -87,3 +79,4 @@ export function useGameState(
     setPeriod,
   };
 }
+

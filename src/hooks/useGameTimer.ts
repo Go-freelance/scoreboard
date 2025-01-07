@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback } from 'react';
 
 export function useGameTimer(
   initialTime: string,
@@ -10,14 +10,14 @@ export function useGameTimer(
   const startTimer = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     let [minutes, seconds] = initialTime.split(":").map(Number);
-
+    
     // Si le temps initial ne contient pas de ":", considérez-le comme des secondes
     if (isNaN(seconds)) {
       seconds = Number(initialTime);
       minutes = 0;
     }
 
-    intervalRef.current = setInterval(() => {
+    const tick = () => {
       if (seconds === 0 && minutes === 0) {
         if (intervalRef.current) clearInterval(intervalRef.current);
         onFinish();
@@ -31,15 +31,19 @@ export function useGameTimer(
         seconds--;
       }
 
-      const newTime =
-        minutes > 0
-          ? `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-              2,
-              "0"
-            )}`
-          : String(seconds).padStart(2, "0");
+      const newTime = minutes > 0
+        ? `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+        : String(seconds).padStart(2, "0");
       onTick(newTime);
-    }, 1000);
+
+      if (seconds === 0 && minutes === 0) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        onFinish();
+      }
+    };
+
+    intervalRef.current = setInterval(tick, 1000);
+    tick(); // Call tick immediately to update the initial state
   }, [initialTime, onTick, onFinish]);
 
   const stopTimer = useCallback(() => {
@@ -48,3 +52,4 @@ export function useGameTimer(
 
   return { startTimer, stopTimer };
 }
+
