@@ -12,10 +12,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Activity, Users } from "lucide-react";
+
+type Team = {
+  name: string;
+  score: number;
+};
+
+type TeamCardProps = {
+  team: Team;
+  teamId: "A" | "B";
+  updateScore: (points: number) => void;
+  sendUpdate: (data: { [key: string]: string | number }) => void;
+  setTeam: React.Dispatch<React.SetStateAction<Team>>;
+};
+
+type GameControlsProps = {
+  gameTimer: string;
+  shotClock: string;
+  period: string;
+  startGameTimer: () => void;
+  startShotClock: () => void;
+  setPeriod: React.Dispatch<React.SetStateAction<string>>;
+  sendUpdate: (data: { [key: string]: string | number }) => void;
+  setGameTimer: React.Dispatch<React.SetStateAction<string>>;
+  setShotClock: React.Dispatch<React.SetStateAction<string>>;
+  gameTimerIntervalRef: React.RefObject<NodeJS.Timeout | null>;
+  shotClockIntervalRef: React.RefObject<NodeJS.Timeout | null>;
+};
 
 export default function Dashboard() {
-  const [teamA, setTeamA] = useState({ name: "Team A", score: 0 });
-  const [teamB, setTeamB] = useState({ name: "Team B", score: 0 });
+  const [teamA, setTeamA] = useState<Team>({ name: "Team A", score: 0 });
+  const [teamB, setTeamB] = useState<Team>({ name: "Team B", score: 0 });
   const [gameTimer, setGameTimer] = useState("10:00");
   const [shotClock, setShotClock] = useState("24");
   const [period, setPeriod] = useState("1");
@@ -129,211 +159,234 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Basketball Scoreboard Manager</h1>
         <Button onClick={handleLogout} variant="outline">
           Logout
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="col-span-1 md:col-span-3">
           <CardHeader>
-            <CardTitle>Team A</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Game Overview
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="teamAName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Team Name
-                </label>
-                <Input
-                  id="teamAName"
-                  value={teamA.name}
-                  onChange={(e) => {
-                    setTeamA({ ...teamA, name: e.target.value });
-                    sendUpdate({ teamAName: e.target.value });
-                  }}
-                />
+            <div className="flex justify-between items-center text-4xl font-bold">
+              <div>{teamA.name}</div>
+              <div className="text-6xl">
+                {teamA.score} - {teamB.score}
               </div>
-              <div>
-                <label
-                  htmlFor="teamAScore"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Score
-                </label>
-                <Input id="teamAScore" value={teamA.score} readOnly />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button onClick={() => updateScore("A", 1)}>+1</Button>
-                <Button onClick={() => updateScore("A", 2)}>+2</Button>
-                <Button onClick={() => updateScore("A", 3)}>+3</Button>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={() => updateScore("A", -1)}
-                >
-                  -1
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => updateScore("A", -2)}
-                >
-                  -2
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => updateScore("A", -3)}
-                >
-                  -3
-                </Button>
-              </div>
+              <div>{teamB.name}</div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Team B</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="teamBName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Team Name
-                </label>
-                <Input
-                  id="teamBName"
-                  value={teamB.name}
-                  onChange={(e) => {
-                    setTeamB({ ...teamB, name: e.target.value });
-                    sendUpdate({ teamBName: e.target.value });
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="teamBScore"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Score
-                </label>
-                <Input id="teamBScore" value={teamB.score} readOnly />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button onClick={() => updateScore("B", 1)}>+1</Button>
-                <Button onClick={() => updateScore("B", 2)}>+2</Button>
-                <Button onClick={() => updateScore("B", 3)}>+3</Button>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={() => updateScore("B", -1)}
-                >
-                  -1
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => updateScore("B", -2)}
-                >
-                  -2
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => updateScore("B", -3)}
-                >
-                  -3
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <TeamCard
+          team={teamA}
+          teamId="A"
+          updateScore={(points) => updateScore("A", points)}
+          sendUpdate={sendUpdate}
+          setTeam={setTeamA}
+        />
+        <GameControls
+          gameTimer={gameTimer}
+          shotClock={shotClock}
+          period={period}
+          startGameTimer={startGameTimer}
+          startShotClock={startShotClock}
+          setPeriod={setPeriod}
+          sendUpdate={sendUpdate}
+          setGameTimer={setGameTimer}
+          setShotClock={setShotClock}
+          gameTimerIntervalRef={gameTimerIntervalRef}
+          shotClockIntervalRef={shotClockIntervalRef}
+        />
+        <TeamCard
+          team={teamB}
+          teamId="B"
+          updateScore={(points) => updateScore("B", points)}
+          sendUpdate={sendUpdate}
+          setTeam={setTeamB}
+        />
       </div>
+    </div>
+  );
+}
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Game Controls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <label
-                htmlFor="gameTimer"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Game Timer
-              </label>
-              <Input id="gameTimer" value={gameTimer} readOnly />
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button onClick={startGameTimer}>Start</Button>
-                <Button
-                  onClick={() => {
-                    if (gameTimerIntervalRef.current)
-                      clearInterval(gameTimerIntervalRef.current);
-                  }}
-                >
-                  Stop
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (gameTimerIntervalRef.current)
-                      clearInterval(gameTimerIntervalRef.current);
-                    setGameTimer("10:00");
-                    sendUpdate({ gameTimer: "10:00" });
-                  }}
-                >
-                  Reset
-                </Button>
-              </div>
+function TeamCard({
+  team,
+  teamId,
+  updateScore,
+  sendUpdate,
+  setTeam,
+}: TeamCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>{team.name}</span>
+          <Badge variant="secondary" className="text-xl">
+            {team.score}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor={`team${teamId}Name`}
+              className="block text-sm font-medium"
+            >
+              Team Name
+            </label>
+            <Input
+              id={`team${teamId}Name`}
+              value={team.name}
+              onChange={(e) => {
+                const newName = e.target.value;
+                setTeam({ ...team, name: newName });
+                sendUpdate({ [`team${teamId}Name`]: newName });
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <Button onClick={() => updateScore(1)}>+1</Button>
+            <Button onClick={() => updateScore(2)}>+2</Button>
+            <Button onClick={() => updateScore(3)}>+3</Button>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant="outline" onClick={() => updateScore(-1)}>
+              -1
+            </Button>
+            <Button variant="outline" onClick={() => updateScore(-2)}>
+              -2
+            </Button>
+            <Button variant="outline" onClick={() => updateScore(-3)}>
+              -3
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function GameControls({
+  gameTimer,
+  shotClock,
+  period,
+  startGameTimer,
+  startShotClock,
+  setPeriod,
+  sendUpdate,
+  setGameTimer,
+  setShotClock,
+  gameTimerIntervalRef,
+  shotClockIntervalRef,
+}: GameControlsProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Game Controls</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div>
+            <label
+              htmlFor="gameTimer"
+              className="block text-sm font-medium mb-2"
+            >
+              Game Timer
+            </label>
+            <div className="flex items-center space-x-2">
+              <Clock className="text-gray-500" />
+              <Input
+                id="gameTimer"
+                value={gameTimer}
+                readOnly
+                className="text-2xl font-bold text-center"
+              />
             </div>
-
-            <div>
-              <label
-                htmlFor="shotClock"
-                className="block text-sm font-medium text-gray-700"
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              <Button onClick={startGameTimer}>Start</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (gameTimerIntervalRef.current)
+                    clearInterval(gameTimerIntervalRef.current);
+                }}
               >
-                Shot Clock
-              </label>
-              <Input id="shotClock" value={shotClock} readOnly />
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button onClick={startShotClock}>Start</Button>
-                <Button
-                  onClick={() => {
-                    if (shotClockIntervalRef.current)
-                      clearInterval(shotClockIntervalRef.current);
-                  }}
-                >
-                  Stop
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (shotClockIntervalRef.current)
-                      clearInterval(shotClockIntervalRef.current);
-                    setShotClock("24");
-                    sendUpdate({ shotClock: "24" });
-                  }}
-                >
-                  Reset
-                </Button>
-              </div>
+                Stop
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  if (gameTimerIntervalRef.current)
+                    clearInterval(gameTimerIntervalRef.current);
+                  setGameTimer("10:00");
+                  sendUpdate({ gameTimer: "10:00" });
+                }}
+              >
+                Reset
+              </Button>
             </div>
+          </div>
 
-            <div>
-              <label
-                htmlFor="period"
-                className="block text-sm font-medium text-gray-700"
+          <Separator />
+
+          <div>
+            <label
+              htmlFor="shotClock"
+              className="block text-sm font-medium mb-2"
+            >
+              Shot Clock
+            </label>
+            <div className="flex items-center space-x-2">
+              <Activity className="text-gray-500" />
+              <Input
+                id="shotClock"
+                value={shotClock}
+                readOnly
+                className="text-2xl font-bold text-center"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              <Button onClick={startShotClock}>Start</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (shotClockIntervalRef.current)
+                    clearInterval(shotClockIntervalRef.current);
+                }}
               >
-                Game Period
-              </label>
+                Stop
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  if (shotClockIntervalRef.current)
+                    clearInterval(shotClockIntervalRef.current);
+                  setShotClock("24");
+                  sendUpdate({ shotClock: "24" });
+                }}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <label htmlFor="period" className="block text-sm font-medium mb-2">
+              Game Period
+            </label>
+            <div className="flex items-center space-x-2">
+              <Users className="text-gray-500" />
               <Select
                 value={period}
                 onValueChange={(value) => {
@@ -354,8 +407,8 @@ export default function Dashboard() {
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
